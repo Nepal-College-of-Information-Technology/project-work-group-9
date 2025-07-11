@@ -1,13 +1,5 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import List 
-from tinydb import TinyDB, Query
 import datetime
-
-app = FastAPI()
-
-db = TinyDB('db.json')
-authors_table = db.table('authors')
+from pydantic import BaseModel
 
 class Author(BaseModel):
     id : int
