@@ -2,7 +2,7 @@ import datetime
 from pydantic import BaseModel
 
 class Author(BaseModel):
-    id : int
+    author_id : int
     first_name : str
     last_name : str
     bio : str
