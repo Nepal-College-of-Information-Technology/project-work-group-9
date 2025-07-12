@@ -24,28 +24,33 @@ def get_all_author():
 # GET method to retrieve a specific author by ID
 @router.get("/authors/{author_id}")
 def get_author_by_id(author_id: int):
-    author = authors_table.get(doc_id=author_id)
+    AuthorQuery = Query()
+    author = authors_table.get(AuthorQuery.author_id == author_id)
     if author:
         return author
     else:
         raise HTTPException(status_code=404, detail="Author not found")
 
+
 # PUT method to Update an author by ID
 @router.put("/authors/{author_id}")
 def update_author(author_id: int, updated_author: Author):
-    if authors_table.contains(doc_id=author_id):
-        authors_table.update(updated_author.__dict__dict(), doc_ids=[author_id])
-        return {"author_id": author_id, **updated_author.__dict__()}
+    AuthorQuery = Query()
+    if authors_table.contains(AuthorQuery.author_id == author_id):
+        authors_table.update(updated_author.dict(), AuthorQuery.author_id == author_id)
+        return {"author_id": author_id, **updated_author.dict()}
     else:
         raise HTTPException(status_code=404, detail="Author not found")
+
 
 # Delete author by ID
 @router.delete("/authors/{author_id}")
 def delete_author(author_id: int):
     AuthorQuery = Query()
-    result = authors_table.remove(AuthorQuery.author_id == author_id)
-    author = authors_table.get(doc_id=author_id)
+    author = authors_table.get(AuthorQuery.author_id == author_id)
+    
     if author:
-        authors_table.remove(doc_ids=[author_id])
+        authors_table.remove(AuthorQuery.author_id == author_id)
         return {"message": f"Author with ID {author_id} deleted successfully."}
+    
     raise HTTPException(status_code=404, detail="Author not found")
