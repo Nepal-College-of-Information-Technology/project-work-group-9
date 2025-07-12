@@ -1,6 +1,6 @@
-from models import Author
+from app.models import Author
 from fastapi import APIRouter, HTTPException
-from db import authors_table
+from app.db import authors_table
 
 router = APIRouter()
 
@@ -36,4 +36,11 @@ def update_author(author_id: int, updated_author: Author):
     else:
         raise HTTPException(status_code=404, detail="Author not found")
 
-
+# Delete author by ID
+@router.delete("/authors/{author_id}")
+def delete_author(author_id: int):
+    author = authors_table.get(doc_id=author_id)
+    if author:
+        authors_table.remove(doc_ids=[author_id])
+        return {"message": f"Author with ID {author_id} deleted successfully."}
+    raise HTTPException(status_code=404, detail="Author not found")
