@@ -1,5 +1,10 @@
 import datetime
 from pydantic import BaseModel
+from typing import List, Optional
+
+class Book(BaseModel):
+    title: str
+    rating: Optional[float] = None
 
 class Author(BaseModel):
     author_id : int
@@ -13,4 +18,4 @@ class Author(BaseModel):
     updated_at : datetime.date
     average_rating : float
     book_count : int
-
+    books: List[Book]
