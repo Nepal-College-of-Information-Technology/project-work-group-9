@@ -2,6 +2,8 @@ from models import Author
 from fastapi import APIRouter, HTTPException
 from db import authors_table
 import json
+from tinydb import Query
+
 
 router = APIRouter()
 
@@ -40,6 +42,8 @@ def update_author(author_id: int, updated_author: Author):
 # Delete author by ID
 @router.delete("/authors/{author_id}")
 def delete_author(author_id: int):
+    AuthorQuery = Query()
+    result = authors_table.remove(AuthorQuery.author_id == author_id)
     author = authors_table.get(doc_id=author_id)
     if author:
         authors_table.remove(doc_ids=[author_id])
