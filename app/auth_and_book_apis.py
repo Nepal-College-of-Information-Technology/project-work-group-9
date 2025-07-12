@@ -1,12 +1,11 @@
 from fastapi import APIRouter, HTTPException
-from models import Author
 from db import authors_table
 from statistics import mean
 
-router = APIRouter()
+router3 = APIRouter()
 
 # Get all books by author
-@router.get("/authors/{author_id}/books")
+@router3.get("/authors/{author_id}/books")
 def get_books_by_author(author_id: int):
     author = authors_table.get(doc_id=author_id)
     if author:
@@ -14,7 +13,7 @@ def get_books_by_author(author_id: int):
     raise HTTPException(status_code=404, detail="Author not found")
 
 # Get author and book summary
-@router.get("/authors/{author_id}/summary")
+@router3.get("/authors/{author_id}/summary")
 def get_author_summary(author_id: int):
     author = authors_table.get(doc_id=author_id)
     if not author:
@@ -29,7 +28,7 @@ def get_author_summary(author_id: int):
     }
 
 # Get author ratings
-@router.get("/authors/{author_id}/statistics")
+@router3.get("/authors/{author_id}/statistics")
 def get_author_statistics(author_id: int):
     author = authors_table.get(doc_id=author_id)
     if not author:

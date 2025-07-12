@@ -1,20 +1,21 @@
-from app.models import Author
+from models import Author
 from fastapi import APIRouter, HTTPException
-from app.db import authors_table
+from db import authors_table
+import json
 
 router = APIRouter()
 
 # POST method to create an author
 @router.post("/authors/")
 def create_author(author: Author):
-    author_dict = author.__dict__()
+    author_dict = json.loads(author.model_dump_json())
     author_id = authors_table.insert(author_dict)
     return {"author_id": author_id, **author_dict}
 
 
 # GET method to retrieve all authors
 @router.get("/authors/")
-def get_author():
+def get_all_author():
     return authors_table.all()
 
 

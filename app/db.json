@@ -1,0 +1,1 @@
+{"authors": {"2": {"author_id": 1, "first_name": "string", "last_name": "string", "bio": "string", "date_of_birth": "2025-07-12", "date_of_death": "2025-07-12", "nationality": "string", "created_at": "2025-07-12", "updated_at": "2025-07-12", "average_rating": 0.0, "book_count": 0, "books": [{"title": "string", "rating": 0.0}]}}}
