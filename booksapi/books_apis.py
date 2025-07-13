@@ -76,6 +76,29 @@ def get_books_by_category(category_id: int):
     }, 200
 
 
+# Get books by author
+@router6.get('/books/author/{author_id}')
+def get_books_by_author(author_id: int):
+    books = books_table.search(BooksQuery.author_id == author_id)
+    return {
+        "author_id": author_id,
+        "books": books,
+        "count": len(books)
+    }, 200
+
+
+# Search books by title (like query)
+@router6.get('/books/search')
+def search_books_by_title(q: str = QueryParam(..., description="Search query for book title")):
+    books = books_table.search(BooksQuery.title.matches(f'.*{q}.*', flags=2))  # Case insensitive
+    return {
+        "query": q,
+        "results": books,
+        "count": len(books)
+    }, 200
+
+
+
 
 
 
