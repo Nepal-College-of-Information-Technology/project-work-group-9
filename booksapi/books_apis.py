@@ -1,10 +1,13 @@
 from app.models import Categories
 from app.models import Book
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query as QueryParam
 from app.db import categories_table
 from app.db import books_table
 import json
 from tinydb import Query
+from datetime import datetime, date, timedelta
+from typing import Optional
+
 
 router6 = APIRouter()
 BooksQuery=Query()
@@ -95,6 +98,19 @@ def search_books_by_title(q: str = QueryParam(..., description="Search query for
         "query": q,
         "results": books,
         "count": len(books)
+    }, 200
+
+
+
+# Get recent books (published last 30 days)
+@router6.get('/books/recent')
+def get_recent_books():
+    thirty_days_ago = (date.today() - timedelta(days=30)).isoformat()
+    books = books_table.search(BooksQuery.publication_date >= thirty_days_ago)
+    return {
+        "books": books,
+        "count": len(books),
+        "date_range": f"Last 30 days from {date.today().isoformat()}"
     }, 200
 
 
