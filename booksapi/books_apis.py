@@ -114,6 +114,40 @@ def get_recent_books():
     }, 200
 
 
+# Get books sorted by price
+@router6.get('/books/sorted-by-price')
+def get_books_sorted_by_price(order: str = QueryParam("asc", regex="^(asc|desc)$")):
+    books = books_table.all()
+    reverse = order == "desc"
+    sorted_books = sorted(books, key=lambda x: x.get('price', 0), reverse=reverse)
+    return {
+        "books": sorted_books,
+        "sort_order": order,
+        "count": len(sorted_books)
+    }, 200
+
+
+# Get books with price between range
+@router6.get('/books/price-range')
+def get_books_by_price_range(
+    min_price: float = QueryParam(..., ge=0, description="Minimum price"),
+    max_price: float = QueryParam(..., ge=0, description="Maximum price")
+):
+    if min_price > max_price:
+        raise HTTPException(status_code=400, detail="min_price cannot be greater than max_price")
+    
+    books = books_table.search(
+        (BooksQuery.price >= min_price) & (BooksQuery.price <= max_price)
+    )
+    return {
+        "books": books,
+        "price_range": f"{min_price} - {max_price}",
+        "count": len(books)
+    }, 200
+
+
+
+
 
 
 
