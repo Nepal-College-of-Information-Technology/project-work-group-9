@@ -1,8 +1,12 @@
 from models import Categories
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse, StreamingResponse
 from db import categories_table
 from db import books_table
 from db import authors_table
+import csv
+from io import StringIO
+import io
 from dtos.dtos import BookDetailDTO,BookDTO,BulkUploadBooks
 import json
 from tinydb import Query
@@ -26,3 +30,32 @@ def get_book_details():
         })
     return details
 
+@router7.get("/books/export/csv")
+def export_books_csv():
+    books = get_book_details()
+    
+    if not books:
+        return {"message": "No books to export"}
+
+    output = StringIO()
+    writer = csv.writer(output)
+
+    # Define CSV headers
+    headers = ["Title", "Author", "Category"]
+    writer.writerow(headers)
+
+    for book in books:
+        row = [
+            book.get("title", ""),
+            book.get("author", ""),
+            book.get("category", "")
+        ]
+        writer.writerow(row)
+
+    output.seek(0)
+
+    return StreamingResponse(
+        output,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=books.csv"}
+    )
