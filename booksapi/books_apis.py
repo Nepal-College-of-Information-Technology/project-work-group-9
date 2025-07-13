@@ -146,6 +146,43 @@ def get_books_by_price_range(
     }, 200
 
 
+# Count total number of books
+@router6.get('/books/count')
+def count_total_books():
+    all_books = books_table.all()
+    total_books = len(all_books)
+    
+    # Count books by category
+    category_counts = {}
+    for book in all_books:
+        category_id = book.get('category_id')
+        if category_id:
+            category_counts[category_id] = category_counts.get(category_id, 0) + 1
+    
+    # Count books by author
+    author_counts = {}
+    for book in all_books:
+        author_id = book.get('author_id')
+        if author_id:
+            author_counts[author_id] = author_counts.get(author_id, 0) + 1
+    
+    books_by_category = [
+        {"category_id": cat_id, "count": count}
+        for cat_id, count in category_counts.items()
+    ]
+    
+    books_by_author = [
+        {"author_id": author_id, "count": count}
+        for author_id, count in author_counts.items()
+    ]
+    
+    return {
+        "total_books": total_books,
+        "books_by_category": books_by_category,
+        "books_by_author": books_by_author
+    }, 200
+
+
 
 
 
