@@ -1,10 +1,21 @@
 import datetime
-from pydantic import BaseModel
 from typing import List, Optional
+from pydantic import BaseModel, Field, validator
+from typing import Optional, List
+from datetime import datetime, date
+from decimal import Decimal
+
 
 class Book(BaseModel):
-    title: str
-    rating: Optional[float] = None
+    title: str = Field(..., min_length=1, max_length=200)
+    author_id: int = Field(..., gt=0)
+    category_id: int = Field(..., gt=0)
+    isbn: str = Field(..., min_length=10, max_length=13)
+    price: float = Field(..., gt=0)
+    publication_date: date
+    description: Optional[str] = ""
+    pages: int = Field(..., gt=0)
+    available_copies: int = Field(default=1, ge=0)    
 
 class Author(BaseModel):
     author_id: int
@@ -28,3 +39,5 @@ class Author(BaseModel):
 class Categories(BaseModel):
     id: int
     name: str    
+
+
