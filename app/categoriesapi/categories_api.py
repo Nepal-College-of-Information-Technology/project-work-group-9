@@ -34,3 +34,11 @@ def get_category(id: int):
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
     return category
+
+@router5.put('/categories')
+def update_category(category: Categories):
+
+    updated = categories_table.update(category.dict(), CategoryQuery.id == category.id)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"message": "Category updated",**category.dict()}
