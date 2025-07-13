@@ -59,3 +59,12 @@ def export_books_csv():
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=books.csv"}
     )
+
+
+@router7.get("/stats")
+def get_stats():
+    return {
+        "total_books": len(books_table),
+        "total_authors": len(authors_table),
+        "total_categories": len(categories_table)
+    }
