@@ -6,6 +6,7 @@ from tinydb import Query
 
 
 router5 = APIRouter()
+CategoryQuery=Query()
 
 
 @router5.get('/categories')
@@ -26,3 +27,10 @@ def create_category(category: Categories):
 @router5.get('/categories', response_model=list[Categories])
 def get_all_categories():
     return categories_table.all()
+
+@router5.get('/categories/{id}', response_model=Categories)
+def get_category(id: int):
+    category = categories_table.get(CategoryQuery.id == id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return category
