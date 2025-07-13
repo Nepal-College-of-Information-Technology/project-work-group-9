@@ -26,6 +26,34 @@ def create_book(book: Book):
     return {**book_dict, "id": book_id}
 
 
+# Get book by ID
+@router6.get('/books/{book_id}')
+def get_book_by_id(book_id: int):
+    book = books_table.get(BooksQuery.id == book_id)
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return book, 200
+
+
+# Update book
+@router6.put('/books/{book_id}')
+def update_book(book_id: int, book: Book):
+    existing = books_table.get(BooksQuery.id == book_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Book not found")
+    
+    # Check if new ID conflicts with existing books (if ID is being changed)
+    if book.id != book_id:
+        id_conflict = books_table.get(BooksQuery.id == book.id)
+        if id_conflict:
+            raise HTTPException(status_code=400, detail="Book ID already exists")
+    
+    book_dict = json.loads(book.model_dump_json())
+    books_table.update(book_dict, BooksQuery.id == book_id)
+    updated_book = books_table.get(BooksQuery.id == book.id)
+    return updated_book, 200
+
+
 
 
 
