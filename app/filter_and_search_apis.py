@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query, HTTPException
 from tinydb import where
-from db import authors_table
+from app.db import authors_table
 
 router2 = APIRouter()
 

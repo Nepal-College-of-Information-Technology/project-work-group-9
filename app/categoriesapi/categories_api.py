@@ -1,7 +1,7 @@
-from models import Categories
+from app.models import Categories
 from fastapi import APIRouter, HTTPException
-from db import categories_table
-from db import books_table
+from app.db import categories_table
+from app.db import books_table
 import json
 from tinydb import Query
 
