@@ -65,6 +65,17 @@ def delete_book(book_id: int):
     return {"message": "Book deleted successfully"}, 200
 
 
+# Get books by category
+@router6.get('/books/category/{category_id}')
+def get_books_by_category(category_id: int):
+    books = books_table.search(BooksQuery.category_id == category_id)
+    return {
+        "category_id": category_id,
+        "books": books,
+        "count": len(books)
+    }, 200
+
+
 
 
 
