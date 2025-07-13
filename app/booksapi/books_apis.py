@@ -24,10 +24,12 @@ def get_all_books():
 # Create a book
 @router6.post('/books', status_code=201)
 def create_book(book: Book):
-    existing = books_table.get(BooksQuery.id == book.id)
+    existing = books_table.get(BooksQuery.isbn == book.isbn)
     if existing:
-        raise HTTPException(status_code=400, detail="Book ID already exists")
-    book_dict = json.loads(book.model_dump_json())
+        raise HTTPException(status_code=400, detail="Book with this ISBN already exists")
+    
+    book_dict = book.dict()
+    book_dict['publication_date'] = book.publication_date.isoformat()
     book_id = books_table.insert(book_dict)
     return {**book_dict, "id": book_id}
 

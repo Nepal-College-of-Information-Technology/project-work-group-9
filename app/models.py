@@ -23,19 +23,20 @@ class Author(BaseModel):
     first_name: str
     last_name: str
     bio: str
-    date_of_birth: datetime.date
-    date_of_death: datetime.date
+    date_of_birth: date
+    date_of_death: Optional[date] = None  # maybe allow None if unknown
     nationality: str
-    created_at: datetime.date
-    updated_at: datetime.date
+    created_at: date
+    updated_at: date
     average_rating: float
     book_count: int
     books: List[Book]
 
     class Config:
         json_encoders = {
-            datetime.date: lambda v: v.isoformat()
+            date: lambda v: v.isoformat()
         }
+
 
 class Categories(BaseModel):
     id: int
