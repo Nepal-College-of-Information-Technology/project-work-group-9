@@ -22,3 +22,7 @@ def create_category(category: Categories):
     categories_dict=json.loads(category.model_dump_json())
     categories_id=categories_table.insert(categories_dict)
     return {**categories_dict}
+
+@router5.get('/categories', response_model=list[Categories])
+def get_all_categories():
+    return categories_table.all()
