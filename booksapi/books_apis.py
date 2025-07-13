@@ -1,5 +1,6 @@
 from app.models import Categories
 from app.models import Book
+from app.models import Author
 from fastapi import APIRouter, HTTPException, Query as QueryParam
 from app.db import categories_table
 from app.db import books_table
