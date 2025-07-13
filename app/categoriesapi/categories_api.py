@@ -42,3 +42,10 @@ def update_category(category: Categories):
     if not updated:
         raise HTTPException(status_code=404, detail="Category not found")
     return {"message": "Category updated",**category.dict()}
+
+@router5.delete('/categories/{id}')
+def delete_category(id: int):
+    deleted = categories_table.remove(CategoryQuery.id == id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"message": "Category deleted"}
