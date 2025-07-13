@@ -54,6 +54,19 @@ def update_book(book_id: int, book: Book):
     return updated_book, 200
 
 
+# Delete book
+@router6.delete('/books/{book_id}')
+def delete_book(book_id: int):
+    existing = books_table.get(BooksQuery.id == book_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Book not found")
+    
+    books_table.remove(BooksQuery.id == book_id)
+    return {"message": "Book deleted successfully"}, 200
+
+
+
+
 
 
 
