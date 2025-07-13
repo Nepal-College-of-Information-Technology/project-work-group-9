@@ -24,3 +24,7 @@ class Author(BaseModel):
         json_encoders = {
             datetime.date: lambda v: v.isoformat()
         }
+
+class Categories(BaseModel):
+    id: int
+    name: str    
