@@ -1,12 +1,14 @@
 from models import Categories
 from fastapi import APIRouter, HTTPException
 from db import categories_table
+from db import books_table
 import json
 from tinydb import Query
 
 
 router5 = APIRouter()
 CategoryQuery=Query()
+BookQuery=Query()
 
 
 @router5.get('/categories')
@@ -49,3 +51,9 @@ def delete_category(id: int):
     if not deleted:
         raise HTTPException(status_code=404, detail="Category not found")
     return {"message": "Category deleted"}
+
+@router5.get('/categories/{id}/books')
+def get_books_under_category(id: int):
+    return books_table.search(BookQuery.category_id==id)
+
+    
