@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from typing import List
-from app.models import Author
-from app.db import authors_table
+from models import Author
+from db import authors_table
 import csv
 import json
 from fastapi.responses import StreamingResponse

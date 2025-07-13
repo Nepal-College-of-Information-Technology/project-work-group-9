@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.db import authors_table
+from db import authors_table
 from statistics import mean
 
 router3 = APIRouter()

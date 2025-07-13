@@ -11,7 +11,7 @@ class Book(BaseModel):
     author_id: int = Field(..., gt=0)
     category_id: int = Field(..., gt=0)
     isbn: str = Field(..., min_length=10, max_length=13)
-    price: float = Field(..., gt=0)  # or use Decimal
+    price: float = Field(..., gt=0) 
     publication_date: date
     description: Optional[str] = None
     pages: int = Field(..., gt=0)
