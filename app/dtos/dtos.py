@@ -14,3 +14,7 @@ class BookDetailDTO(BaseModel):
 
 class BulkUploadBooks(BaseModel):
     books: List[BookDTO]
+
+class UserLogin(BaseModel):
+    username: str
+    password: str

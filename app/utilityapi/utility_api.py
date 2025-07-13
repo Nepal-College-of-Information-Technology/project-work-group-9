@@ -7,7 +7,7 @@ from db import authors_table
 import csv
 from io import StringIO
 import io
-from dtos.dtos import BookDetailDTO,BookDTO,BulkUploadBooks
+from dtos.dtos import BookDetailDTO,UserLogin
 import json
 from tinydb import Query
 
@@ -68,3 +68,15 @@ def get_stats():
         "total_authors": len(authors_table),
         "total_categories": len(categories_table)
     }
+
+@router7.get("/health")
+def health_check():
+    return {"status": "OK"}
+
+
+
+@router7.post("/login")
+def login(user: UserLogin):
+    if user.username == "admin" and user.password == "password":
+        return {"message": "Login successful"}
+    raise HTTPException(status_code=401, detail="Invalid credentials")
