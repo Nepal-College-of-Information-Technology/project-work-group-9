@@ -1,9 +1,9 @@
-import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field, validator
 from typing import Optional, List
 from datetime import datetime, date
 from decimal import Decimal
+from datetime import date
 
 
 class Book(BaseModel):
@@ -11,11 +11,12 @@ class Book(BaseModel):
     author_id: int = Field(..., gt=0)
     category_id: int = Field(..., gt=0)
     isbn: str = Field(..., min_length=10, max_length=13)
-    price: float = Field(..., gt=0)
+    price: float = Field(..., gt=0)  # or use Decimal
     publication_date: date
-    description: Optional[str] = ""
+    description: Optional[str] = None
     pages: int = Field(..., gt=0)
-    available_copies: int = Field(default=1, ge=0)    
+    available_copies: int = Field(default=1, ge=0)
+ 
 
 class Author(BaseModel):
     author_id: int

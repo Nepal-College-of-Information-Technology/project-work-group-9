@@ -4,6 +4,7 @@ from app.models import Author
 from fastapi import APIRouter, HTTPException, Query as QueryParam
 from app.db import categories_table
 from app.db import books_table
+from app.db import authors_table
 import json
 from tinydb import Query
 from datetime import datetime, date, timedelta
@@ -12,6 +13,7 @@ from typing import Optional
 
 router6 = APIRouter()
 BooksQuery=Query()
+CategoryQuery=Query()
 
 @router6.get('/books')
 def get_all_books():
@@ -185,6 +187,15 @@ def count_total_books():
 
 
 
+# Get books by publication year
+@router6.get('/books/year/{year}')
+def get_books_by_year(year: int):
+    books = books_table.search(BooksQuery.publication_date.matches(f'^{year}'))
+    return {
+        "year": year,
+        "books": books,
+        "count": len(books)
+    }, 200
 
 
 
