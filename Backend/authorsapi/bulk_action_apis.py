@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from typing import List
-from models import Author
+from .models import Author
 from db import authors_table
 import csv
 import json
