@@ -1,1 +1,6 @@
-{"authors": {"1": {"author_id": 1, "first_name": "lamin", "last_name": "tamang", "bio": "gud gurl", "date_of_birth": "2020-07-12", "date_of_death": "2025-07-12", "nationality": "nepali", "created_at": "2025-07-12", "updated_at": "2025-07-12", "average_rating": 10.0, "book_count": 100, "books": [{"title": "i am amazing", "rating": 10.0}]}}}
+{
+    "authors":
+     {"1": {"author_id": 1, "first_name": "lamin", "last_name": "tamang", "bio": "gud gurl", "date_of_birth": "2020-07-12", "date_of_death": "2025-07-12", "nationality": "nepali", "created_at": "2025-07-12", "updated_at": "2025-07-12", "average_rating": 10.0, "book_count": 100, "books": [{"title": "i am amazing", "rating": 10.0}]}},
+      "categories": {"1": {"id": 1, "name": "Fiction"}, "2": {"id": 2, "name": "Sci-Fi"}},
+      "books": {"1": {"title": "Anisha", "author_id": 1, "category_id": 1, "isbn": "stringstri", "price": 1.0, "publication_date": "2025-07-13", "description": "i am a student", "pages": 1, "available_copies": 1}}
+    }
