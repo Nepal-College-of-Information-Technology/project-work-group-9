@@ -1,13 +1,13 @@
-from models import Categories
+from ..authorsapi.models import Categories
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
-from db import categories_table
-from db import books_table
-from db import authors_table
+from ..db import categories_table
+from ..db import books_table
+from ..db import authors_table
 import csv
 from io import StringIO
 import io
-from dtos.dtos import BookDetailDTO,UserLogin
+from ..dtos.dtos import BookDetailDTO,UserLogin
 import json
 from tinydb import Query
 

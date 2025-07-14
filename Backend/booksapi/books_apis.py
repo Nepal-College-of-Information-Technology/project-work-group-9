@@ -1,10 +1,10 @@
-from models import Categories
-from models import Book
-from models import Author
+from ..authorsapi.models import Categories
+from ..authorsapi.models import Book
+from ..authorsapi.models import Author
 from fastapi import APIRouter, HTTPException, Query as QueryParam
-from db import categories_table
-from db import books_table
-from db import authors_table
+from ..db import categories_table
+from ..db import books_table
+from ..db import authors_table
 import json
 from tinydb import Query
 from datetime import datetime, date, timedelta
