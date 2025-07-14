@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiClient } from '../utils/api-client';
 
 export interface Book {
   id: string;
@@ -35,6 +36,7 @@ export interface LibraryStats {
 }
 
 // Simple in-memory storage (replace with actual API calls)
+/*
 let booksData: Book[] = [
   {
     id: '1',
@@ -69,17 +71,33 @@ let categoriesData: Category[] = [
   { id: '1', name: 'Programming', bookCount: 2 },
   { id: '2', name: 'Design', bookCount: 0 }
 ];
+*/
 
 export const useLibraryData = () => {
-  const [books, setBooks] = useState<Book[]>(booksData);
-  const [authors, setAuthors] = useState<Author[]>(authorsData);
-  const [categories, setCategories] = useState<Category[]>(categoriesData);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [authors, setAuthors] = useState<Author[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  // Update counts when data changes
   useEffect(() => {
-    updateCounts();
-  }, [books]);
+    fetchInitialData();
+  }, []);
 
+  const fetchInitialData = async () => {
+    try {
+      const [booksRes, authorsRes, categoriesRes] = await Promise.all([
+        apiClient.get('/books'),
+        apiClient.get('/authors'),
+        apiClient.get('/categories'),
+      ]);
+      setBooks(booksRes.data);
+      setAuthors(authorsRes.data);
+      setCategories(categoriesRes.data);
+    } catch (error) {
+      console.error('Failed to fetch library data:', error);
+    }
+  };
+
+/*
   const updateCounts = () => {
     // Update author book counts
     const updatedAuthors = authorsData.map(author => ({
@@ -97,6 +115,7 @@ export const useLibraryData = () => {
     setCategories(updatedCategories);
     categoriesData = updatedCategories;
   };
+  */
 
   const getStats = (): LibraryStats => {
     const totalBooks = books.length;
@@ -122,91 +141,59 @@ export const useLibraryData = () => {
     };
   };
 
-  // Book operations
-  const addBook = (bookData: Omit<Book, 'id' | 'authorName' | 'categoryName'>) => {
+  // addBook with API call
+const addBook = async (bookData: Omit<Book, 'id' | 'authorName' | 'categoryName'>) => {
+  const response = await apiClient.post('/books', bookData);
+  const newBook: Book = response.data;
+  setBooks(prev => [...prev, newBook]);
+  return newBook;
+};
+
+// updateBook with API call
+const updateBook = async (id: string, bookData: Omit<Book, 'id' | 'authorName' | 'categoryName'>) => {
+  const response = await apiClient.put(`/books/${id}`, bookData);
+  const updatedBook: Book = response.data;
+  setBooks(prev => prev.map(book => (book.id === id ? updatedBook : book)));
+};
+
+// deleteBook with API call
+const deleteBook = async (id: string) => {
+  await apiClient.delete(`/books/${id}`);
+  setBooks(prev => prev.filter(book => book.id !== id));
+};
+
+// bulkImportBooks (client-side validation only, then add via API)
+const bulkImportBooks = async (importedBooks: Omit<Book, 'id' | 'authorName' | 'categoryName'>[]) => {
+  const errors: string[] = [];
+  const imported: Book[] = [];
+
+  for (const [index, bookData] of importedBooks.entries()) {
     const author = authors.find(a => a.id === bookData.authorId);
     const category = categories.find(c => c.id === bookData.categoryId);
-    
-    if (!author || !category) {
-      throw new Error('Invalid author or category');
+
+    if (!author) {
+      errors.push(`Row ${index + 1}: Author ID ${bookData.authorId} not found`);
+      continue;
+    }
+    if (!category) {
+      errors.push(`Row ${index + 1}: Category ID ${bookData.categoryId} not found`);
+      continue;
     }
 
-    const newBook: Book = {
-      ...bookData,
-      id: Date.now().toString(),
-      authorName: author.name,
-      categoryName: category.name
-    };
-
-    const updatedBooks = [...books, newBook];
-    setBooks(updatedBooks);
-    booksData = updatedBooks;
-    return newBook;
-  };
-
-  const updateBook = (id: string, bookData: Omit<Book, 'id' | 'authorName' | 'categoryName'>) => {
-    const author = authors.find(a => a.id === bookData.authorId);
-    const category = categories.find(c => c.id === bookData.categoryId);
-    
-    if (!author || !category) {
-      throw new Error('Invalid author or category');
+    try {
+      const response = await apiClient.post('/books', bookData);
+      imported.push(response.data);
+    } catch (error) {
+      errors.push(`Row ${index + 1}: Failed to import book`);
     }
+  }
 
-    const updatedBooks = books.map(book => 
-      book.id === id 
-        ? { ...bookData, id, authorName: author.name, categoryName: category.name }
-        : book
-    );
-    setBooks(updatedBooks);
-    booksData = updatedBooks;
-  };
+  if (imported.length > 0) {
+    setBooks(prev => [...prev, ...imported]);
+  }
 
-  const deleteBook = (id: string) => {
-    const updatedBooks = books.filter(book => book.id !== id);
-    setBooks(updatedBooks);
-    booksData = updatedBooks;
-  };
-
-  const bulkImportBooks = (importedBooks: Omit<Book, 'id' | 'authorName' | 'categoryName'>[]) => {
-    const newBooks: Book[] = [];
-    const errors: string[] = [];
-
-    importedBooks.forEach((bookData, index) => {
-      try {
-        const author = authors.find(a => a.id === bookData.authorId);
-        const category = categories.find(c => c.id === bookData.categoryId);
-        
-        if (!author) {
-          errors.push(`Row ${index + 1}: Author ID ${bookData.authorId} not found`);
-          return;
-        }
-        
-        if (!category) {
-          errors.push(`Row ${index + 1}: Category ID ${bookData.categoryId} not found`);
-          return;
-        }
-
-        const newBook: Book = {
-          ...bookData,
-          id: `${Date.now()}-${index}`,
-          authorName: author.name,
-          categoryName: category.name
-        };
-        
-        newBooks.push(newBook);
-      } catch (error) {
-        errors.push(`Row ${index + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-    });
-
-    if (newBooks.length > 0) {
-      const updatedBooks = [...books, ...newBooks];
-      setBooks(updatedBooks);
-      booksData = updatedBooks;
-    }
-
-    return { imported: newBooks.length, errors };
-  };
+  return { imported: imported.length, errors };
+};
 
   // Author operations
   const addAuthor = (authorData: Omit<Author, 'id' | 'bookCount'>) => {
