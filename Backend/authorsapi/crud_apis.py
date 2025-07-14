@@ -1,4 +1,4 @@
-from models import Author
+from .models import Author
 from fastapi import APIRouter, HTTPException
 from db import authors_table
 import json
