@@ -1,7 +1,7 @@
-from ..authorsapi.models import Categories
+from authorsapi.models import Categories
 from fastapi import APIRouter, HTTPException
-from ..db import categories_table
-from ..db import books_table
+from db import categories_table
+from db import books_table
 import json
 from tinydb import Query
 
