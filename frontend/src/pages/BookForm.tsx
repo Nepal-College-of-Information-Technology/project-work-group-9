@@ -39,12 +39,12 @@ const BookForm = () => {
           description: book.description,
           authorId: book.authorId,
           categoryId: book.categoryId,
-          publishedDate: book.publishedDate,
+          publishedDate: book.publication_date,
           price: book.price.toString(),
         });
       }
     }
-  }, [isEdit, id]);
+  }, [isEdit, id, books]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<BookFormData> = {};
@@ -62,32 +62,44 @@ const BookForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
+  // Example: UI form submit handler
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    setLoading(true);
+  if (!validateForm()) return;
 
-    try {
-      const bookData = {
-        ...formData,
-        price: Number(formData.price),
-      };
+  setLoading(true);
 
-      if (isEdit) {
-        updateBook(id!, bookData);
-      } else {
-        addBook(bookData);
-      }
+  try {
+    // Prepare book data using IDs directly from formData
+    const bookData = {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      author_id: formData.authorId,
+      category_id: formData.categoryId,
+      publication_date: formData.publishedDate,
+      price: Number(formData.price),
+    };
 
-      navigate('/books');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to save book');
-    } finally {
-      setLoading(false);
+    console.log(" Payload to send:", bookData);
+
+    if (isEdit && id) {
+      // Update book by ID
+      await updateBook(id, bookData);
+    } else {
+      // Add new book
+      await addBook(bookData);
     }
-  };
+
+    navigate('/books');
+  } catch (error) {
+    alert(error instanceof Error ? error.message : 'Failed to save book');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

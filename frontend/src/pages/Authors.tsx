@@ -3,25 +3,65 @@ import { Link } from 'react-router-dom';
 import { Plus, Search, Edit, Trash2, Book, Download } from 'lucide-react';
 import { useLibraryData } from '../hooks/useLibraryData';
 import { exportToCSV, exportToJSON } from '../utils/exportUtils';
+import { Author } from '../hooks/useLibraryData'; 
 
 const Authors = () => {
-  const { authors, deleteAuthor } = useLibraryData();
+  const { authors, deleteAuthor } = useLibraryData() as { authors: Author[]; deleteAuthor: (id: string) => Promise<void> };
   const [searchTerm, setSearchTerm] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this author?')) {
-      try {
-        deleteAuthor(id);
-      } catch (error) {
-        alert(error instanceof Error ? error.message : 'Failed to delete author');
-      }
+
+ const handleDelete = async (id: string) => {
+  if (window.confirm('Are you sure you want to delete this author?')) {
+    try {
+      setDeletingId(id);
+      await deleteAuthor(id);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Failed to delete author');
+    } finally {
+      setDeletingId(null);
     }
-  };
+  }
+};
 
-  const filteredAuthors = authors.filter(author =>
-    author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    author.bio.toLowerCase().includes(searchTerm.toLowerCase())
+(authors || []).forEach((author, index) => {
+  if (!author) {
+    console.warn(`Author at index ${index} is undefined or null`);
+    return;
+  }
+
+  if (author.name === undefined) {
+    console.warn(`Author at index ${index} is missing 'name':`, author);
+  }
+
+  if (author.bio === undefined) {
+    console.warn(`Author at index ${index} is missing 'bio':`, author);
+  }
+});
+
+
+const normalizedSearchTerm = searchTerm?.toLowerCase();
+
+const filteredAuthors = (authors ?? []).filter((author): author is Author => {
+  if (!author || typeof author.first_name !== 'string' || typeof author.last_name !== 'string') {
+    return false;
+  }
+
+  const fullName = `${author?.first_name ?? ''} ${author?.last_name ?? ''}`.toLowerCase();
+  const bio = (author?.bio ?? '').toLowerCase();
+
+
+  return (
+    fullName.includes(normalizedSearchTerm) ||
+    bio.includes(normalizedSearchTerm)
   );
+});
+
+
+
+
+console.log('Authors:', authors);
+
 
   const handleExport = (format: 'csv' | 'json') => {
     const timestamp = new Date().toISOString().split('T')[0];
@@ -87,7 +127,7 @@ const Authors = () => {
           {filteredAuthors.map((author) => (
             <div key={author.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-4">
-                <h3 className="text-lg font-semibold text-black">{author.name}</h3>
+                <h3 className="text-lg font-semibold text-black">{author.first_name} {author.last_name}</h3>
                 <div className="flex items-center space-x-2">
                   <Link
                     to={`/authors/edit/${author.id}`}
@@ -108,7 +148,7 @@ const Authors = () => {
               
               <div className="flex items-center text-sm text-gray-500">
                 <Book className="h-4 w-4 mr-1" />
-                <span>{author.bookCount} {author.bookCount === 1 ? 'book' : 'books'}</span>
+                <span>{author.book_count} {author.book_count === 1 ? 'book' : 'books'}</span>
               </div>
             </div>
           ))}
