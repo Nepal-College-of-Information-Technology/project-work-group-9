@@ -11,7 +11,7 @@ class Book(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     author_id: int = Field(..., gt=0)
     category_id: int = Field(..., gt=0)
-    isbn: str = Field(..., min_length=10, max_length=13)
+    isbn: Optional[str] = Field(default=None, min_length=10, max_length=13)
     price: float = Field(..., gt=0) 
     publication_date: date
     description: Optional[str] = None
@@ -53,15 +53,12 @@ class CategoryCreate(BaseModel):
     name: str    
 
 class BookCreate(BaseModel):
-    title: str = Field(..., min_length=1, max_length=200)
-    author_id: int = Field(..., gt=0)
-    category_id: int = Field(..., gt=0)
-    isbn: str = Field(..., min_length=10, max_length=13)
-    price: float = Field(..., gt=0)
+    title: str
+    description: str
+    author_id: int
+    category_id: int
     publication_date: date
-    description: Optional[str] = None
-    pages: int = Field(..., gt=0)
-    available_copies: int = Field(default=1, ge=0)
+    price: float
 
 
 class AuthorCreateInput(BaseModel):

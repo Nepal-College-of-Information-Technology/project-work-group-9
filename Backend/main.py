@@ -7,7 +7,7 @@ from categoriesapi.categories_api import router5
 from booksapi.books_apis import router6
 from utilityapi.utility_api import router7
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.responses import JSONResponse
 
 
 
@@ -28,3 +28,4 @@ app.include_router(router4)
 app.include_router(router5)
 app.include_router(router6)
 app.include_router(router7)
+

@@ -6,10 +6,20 @@ export interface Book {
   title: string;
   description: string;
   authorId: string;
-  authorName: string;
+  authorName?: string;   // optional if you want to keep the original shape
   categoryId: string;
-  categoryName: string;
-  publishedDate: string;
+  categoryName?: string;
+  publication_date: string;
+  price: number;
+}
+
+
+export interface BookCreate {
+  title: string;
+  description: string;
+  author_id: number;
+  category_id: number;
+  publication_date: string; // backend expects this format
   price: number;
 }
 
@@ -29,8 +39,6 @@ export interface Author {
   book_count: number;
   books: any[];  // or your Book[] type if defined
 }
-
-
 
 
 export interface AuthorCreateInput {
@@ -104,7 +112,7 @@ const transformCategory = (backendCategory: any): Category => ({
 
 
 const transformAuthor = (raw: any): Author => ({
-  id: raw.author_id?.toString() ?? '',
+  id: raw.id?.toString() ?? raw.author_id?.toString() ?? '',
   first_name: raw.first_name ?? '',
   last_name: raw.last_name ?? '',
   name: `${raw.first_name ?? ''} ${raw.last_name ?? ''}`.trim(),
@@ -134,7 +142,7 @@ const transformBook = (backendBook: any, authors: Author[], categories: Category
     authorName: author ? `${author.first_name} ${author.last_name}`.trim() : '',
     categoryId: String(backendBook.category_id),
     categoryName: category?.name || '',
-    publishedDate: backendBook.published_date,
+    publication_date: backendBook.published_date,
     price: backendBook.price,
   };
 };
@@ -150,30 +158,30 @@ export const useLibraryData = () => {
   }, []);
 
   const fetchInitialData = async () => {
-  try {
-    const [booksRes, authorsRes, categoriesRes] = await Promise.all([
-      apiClient.get('/books'),
-      apiClient.get('/authors'),
-      apiClient.get('/categories'),
-    ]);
+    try {
+      const [booksRes, authorsRes, categoriesRes] = await Promise.all([
+        apiClient.get('/books'),
+        apiClient.get('/authors'),
+        apiClient.get('/categories'),
+      ]);
 
-    const transformedAuthors = authorsRes.data.map(transformAuthor);
-    const transformedCategories = categoriesRes.data.map(transformCategory);
+      const transformedAuthors = authorsRes.data.map(transformAuthor);
+      const transformedCategories = categoriesRes.data.map(transformCategory);
 
-    setAuthors(transformedAuthors);
-    setCategories(transformedCategories);
+      setAuthors(transformedAuthors);
+      setCategories(transformedCategories);
 
-    const transformedBooks = booksRes.data.map((backendBook: any) =>
-      transformBook(backendBook, transformedAuthors, transformedCategories)
-    );
+      const transformedBooks = booksRes.data.map((backendBook: any) =>
+        transformBook(backendBook, transformedAuthors, transformedCategories)
+      );
 
-    setBooks(transformedBooks);
-  } catch (error) {
-    console.error('Failed to fetch library data:', error);
-  }
+      setBooks(transformedBooks);
+    } catch (error) {
+      console.error('Failed to fetch library data:', error);
+    }
+
+
 };
-
-
 /*
   const updateCounts = () => {
     // Update author book counts
@@ -194,66 +202,113 @@ export const useLibraryData = () => {
   };
   */
 
-  const getStats = (): LibraryStats => {
-    const totalBooks = books.length;
-    const totalAuthors = authors.length;
-    const totalCategories = categories.length;
-    
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const recentBooks = books.filter(book => 
-      new Date(book.publishedDate) >= thirtyDaysAgo
-    ).length;
+// Wrapper function to be called from your UI form handler
+const addBookByName = async (bookData: {
+  title: string;
+  description: string;
+  authorName: string;
+  categoryName: string;
+  publication_date: string;
+  price: number;
+}) => {
+  const authorObj = authors.find(
+    a => a.name.toLowerCase() === bookData.authorName.trim().toLowerCase()
+  );
+  if (!authorObj) throw new Error(`Author "${bookData.authorName}" not found`);
 
-    const totalValue = books.reduce((sum, book) => sum + book.price, 0);
-    const averagePrice = totalBooks > 0 ? totalValue / totalBooks : 0;
+  const categoryObj = categories.find(
+    c => c.name.toLowerCase() === bookData.categoryName.trim().toLowerCase()
+  );
+  if (!categoryObj) throw new Error(`Category "${bookData.categoryName}" not found`);
 
-    return {
-      totalBooks,
-      totalAuthors,
-      totalCategories,
-      recentBooks,
-      averagePrice,
-      totalValue
-    };
+  // Now call existing addBook with IDs
+  return await addBook({
+    title: bookData.title,
+    description: bookData.description,
+    author_id: Number(authorObj.id),
+    category_id: Number(categoryObj.id),
+    publication_date: bookData.publication_date,
+    price: bookData.price,
+  });
+};
+
+ 
+  // addBook with API call
+const addBook = async (bookData: {
+  title: string;
+  description: string;
+  author_id: number;   // <-- pass the ID directly
+  category_id: number;
+  publication_date: string;
+  price: number;
+}) => {
+  if (!bookData.author_id) {
+    throw new Error('Author ID is required and cannot be undefined');
+  }
+
+  // No need to lookup author by name here, just use ID
+  const authorObj = authors.find(a => a.id === String(bookData.author_id));
+  if (!authorObj) throw new Error(`Author ID ${bookData.author_id} not found`);
+
+  
+  // Similar for category_id
+  const categoryObj = categories.find(c => c.id === String(bookData.category_id));
+  if (!categoryObj) throw new Error(`Category ID ${bookData.category_id} not found`);
+
+  const payload = {
+  title: bookData.title,
+  description: bookData.description,
+  author_id: bookData.author_id,
+  category_id: bookData.category_id,
+  publication_date: bookData.publication_date, 
+  price: bookData.price,
+};
+
+
+  console.log("Sending book to backend:", payload);
+
+  const response = await apiClient.post('/books', payload);
+
+  // Transform response to Book shape with author and category names included
+  const newBook: Book = {
+    id: String(response.data.id),
+    title: response.data.title,
+    description: response.data.description,
+    authorId: String(response.data.author_id),
+    authorName: `${authorObj.first_name} ${authorObj.last_name}`.trim(),
+    categoryId: String(response.data.category_id),
+    categoryName: categoryObj.name,
+    publication_date: response.data.publication_date,
+    price: response.data.price,
   };
 
-  // addBook with API call
-const addBook = async (bookData: Omit<Book, 'id' | 'authorName' | 'categoryName'>) => {
-  console.log('Adding book:', bookData);
-  const response = await apiClient.post('/books', bookData);
-  console.log('Response from addBook:', response.data);
-  const newBook = transformBook(response.data, authors, categories);
   setBooks(prev => [...prev, newBook]);
   return newBook;
 };
 
 
 
-// updateBook with API call
-const updateBook = async (id: string, bookData: Omit<Book, 'id' | 'authorName' | 'categoryName'>): Promise<Book> => {
-  const response = await apiClient.put(`/books/${id}`, bookData);
-  const author = authors.find(a => a.id === response.data.authorId);
-  const category = categories.find(c => c.id === response.data.categoryId);
-
-  const updatedBook: Book = {
-    ...response.data,
-    authorName: getAuthorFullName(author),
-    categoryName: category?.name || '',
+  const updateBook = async (id: string, bookData: Partial<BookCreate>) => {
+    const response = await apiClient.put(`/books/${id}`, { ...bookData, id: Number(id) });
+    const updatedBook = {
+      id: String(response.data.id),
+      title: response.data.title,
+      description: response.data.description,
+      authorId: String(response.data.author_id),
+      categoryId: String(response.data.category_id),
+      publishedDate: response.data.publication_date,
+      price: response.data.price,
+    };
+    setBooks(prev => prev.map(book => (book.id === id ? updatedBook : book)));
+    return updatedBook;
   };
 
-  setBooks(prev => prev.map(book => (book.id === id ? updatedBook : book)));
+  const deleteBook = async (id: string) => {
+    await apiClient.delete(`/books/${id}`);
+    setBooks(prev => prev.filter(book => book.id !== id));
+  };
 
-  return updatedBook;
-};
 
-
-
-// deleteBook with API call
-const deleteBook = async (id: string) => {
-  await apiClient.delete(`/books/${id}`);
-  setBooks(prev => prev.filter(book => book.id !== id));
-};
 
 // bulkImportBooks (client-side validation only, then add via API)
 const bulkImportBooks = async (importedBooks: Omit<Book, 'id' | 'authorName' | 'categoryName'>[]) => {
@@ -366,6 +421,8 @@ const bulkImportBooks = async (importedBooks: Omit<Book, 'id' | 'authorName' | '
       book.categoryId === id ? { ...book, categoryName: updatedCategory.name } : book
     );
     setBooks(updatedBooks);
+    return updatedCategory;
+
   };
 
   const deleteCategory = async (id: string) => {
@@ -378,6 +435,24 @@ const bulkImportBooks = async (importedBooks: Omit<Book, 'id' | 'authorName' | '
     setCategories(prev => prev.filter(category => category.id !== id));
   };
 
+
+    const getStats = () => {
+    const totalBooks = books.length;
+    const totalAuthors = authors.length;
+    const totalCategories = categories.length;
+    const recentBooks = books.filter(b => new Date(b.publication_date) > new Date('2024-01-01')).length;
+    const averagePrice = books.reduce((acc, b) => acc + b.price, 0) / (books.length || 1);
+    const totalValue = books.reduce((acc, b) => acc + b.price, 0);
+
+    return {
+      totalBooks,
+      totalAuthors,
+      totalCategories,
+      recentBooks,
+      averagePrice,
+      totalValue,
+    };
+  };
 
   return {
     books,
