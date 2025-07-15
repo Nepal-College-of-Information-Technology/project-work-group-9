@@ -10,7 +10,7 @@ Prawneel poudel(221734) - Frontend Developer
 
 ##  Project Abstract
 
-Our project aims to build a full-stack **Library Management System** that allows librarians and users to manage books, authors, categories, and book availability. The system is developed using **FastAPI** for the backend and **React.js** for the frontend, and utilizes **TinyDB** as a lightweight database.
+Our project aims to build a full-stack **Library Management System** that allows librarians and users to manage books, authors, categories, and book availability. The system is developed using **FastAPI** for the backend and **React.js** and **typescript** for the frontend, and utilizes **TinyDB** as a lightweight database.
 
 This project addresses the need for an efficient and modernized approach to handling library data without relying on heavy relational databases. It is particularly relevant for educational or small organizational use where resources are limited, and flexibility is essential. The use of Docker further ensures easy deployment and portability.
 
@@ -39,7 +39,7 @@ This project addresses the need for an efficient and modernized approach to hand
 
 1. **Frontend**:
 
-   * Developed using **React.js**
+   * Developed using **React.js**, **typescript**
    * Provides user-friendly UI for CRUD operations on books, authors, and categories
 
 2. **Backend**:
@@ -81,7 +81,7 @@ This project addresses the need for an efficient and modernized approach to hand
 ###  Frameworks & Libraries
 
 * FastAPI, Pydantic (Backend)
-* React.js (Frontend)
+* React.js , typescript (Frontend)
 
 ###  DevOps & Deployment
 
