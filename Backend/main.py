@@ -6,10 +6,19 @@ from authorsapi.bulk_action_apis import router4
 from categoriesapi.categories_api import router5
 from booksapi.books_apis import router6
 from utilityapi.utility_api import router7
+from fastapi.middleware.cors import CORSMiddleware
+
 
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"], 
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(router)
 app.include_router(router2)

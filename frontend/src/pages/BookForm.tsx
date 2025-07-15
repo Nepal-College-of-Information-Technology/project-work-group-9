@@ -44,7 +44,7 @@ const BookForm = () => {
         });
       }
     }
-  }, [isEdit, id]);
+  }, [isEdit, id, books]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<BookFormData> = {};
@@ -70,23 +70,24 @@ const BookForm = () => {
     setLoading(true);
 
     try {
-      const bookData = {
-        ...formData,
-        price: Number(formData.price),
-      };
+  const bookData = {
+    ...formData,
+    price: Number(formData.price),
+  };
 
-      if (isEdit) {
-        updateBook(id!, bookData);
-      } else {
-        addBook(bookData);
-      }
-
-      navigate('/books');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to save book');
-    } finally {
-      setLoading(false);
+  if (isEdit) {
+      await updateBook(id!, bookData);
+    } else {
+      await addBook(bookData);
     }
+
+    navigate('/books');
+  } catch (error) {
+    alert(error instanceof Error ? error.message : 'Failed to save book');
+  } finally {
+    setLoading(false);
+  }
+
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

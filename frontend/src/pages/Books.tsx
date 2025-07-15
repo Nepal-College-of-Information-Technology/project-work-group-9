@@ -23,25 +23,29 @@ const Books = () => {
   };
 
   const filteredBooks = books
-    .filter(book => 
-      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.authorName.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  .filter(book => {
+    const title = book.title || '';
+    const author = book.authorName || '';
+    const term = searchTerm.toLowerCase();
+
+    return title.toLowerCase().includes(term) || author.toLowerCase().includes(term);
+  })
     .filter(book => filterCategory === '' || book.categoryName === filterCategory)
     .sort((a, b) => {
       switch (sortBy) {
         case 'title':
-          return a.title.localeCompare(b.title);
+          return (a.title ?? '').localeCompare(b.title ?? '');
         case 'author':
-          return a.authorName.localeCompare(b.authorName);
+          return (a.authorName ?? '').localeCompare(b.authorName ?? '');
         case 'price':
-          return a.price - b.price;
+          return (a.price ?? 0) - (b.price ?? 0);
         case 'publishedDate':
-          return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
+          return new Date(b.publishedDate ?? 0).getTime() - new Date(a.publishedDate ?? 0).getTime();
         default:
           return 0;
-      }
-    });
+  }
+});
+
 
   const categoryNames = Array.from(new Set(books.map(book => book.categoryName)));
 
@@ -127,13 +131,13 @@ const Books = () => {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-            >
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
               <option value="">All Categories</option>
-              {categoryNames.map(category => (
-                <option key={category} value={category}>{category}</option>
+              {categoryNames.map((category, index) => (
+                <option key={`${category}-${index}`} value={category}>{category}</option>
               ))}
             </select>
+
             
             <select
               value={sortBy}
@@ -161,8 +165,8 @@ const Books = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredBooks.map((book) => (
-                <tr key={book.id} className="border-b border-gray-100 hover:bg-gray-50">
+              {filteredBooks.map((book, index) => (
+                <tr key={book.id ?? `book-${index}`} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4">
                     <div>
                       <div className="font-medium text-black">{book.title}</div>
@@ -175,8 +179,8 @@ const Books = () => {
                       {book.categoryName}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-gray-900">{new Date(book.publishedDate).toLocaleDateString()}</td>
-                  <td className="py-3 px-4 text-gray-900">${book.price.toFixed(2)}</td>
+                  <td className="py-3 px-4 text-gray-900">{book.publishedDate ? new Date(book.publishedDate).toLocaleDateString() : 'N/A'}</td>
+                  <td className="py-3 px-4 text-gray-900">${(book.price ?? 0).toFixed(2)}</td>
                   <td className="py-3 px-4">
                     <div className="flex items-center space-x-2">
                       <button className="p-1 text-gray-600 hover:text-black transition-colors">
@@ -199,6 +203,7 @@ const Books = () => {
                 </tr>
               ))}
             </tbody>
+
           </table>
         </div>
 

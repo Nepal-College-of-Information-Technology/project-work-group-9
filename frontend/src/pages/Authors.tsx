@@ -7,16 +7,23 @@ import { exportToCSV, exportToJSON } from '../utils/exportUtils';
 const Authors = () => {
   const { authors, deleteAuthor } = useLibraryData();
   const [searchTerm, setSearchTerm] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this author?')) {
-      try {
-        deleteAuthor(id);
-      } catch (error) {
-        alert(error instanceof Error ? error.message : 'Failed to delete author');
-      }
+
+ const handleDelete = async (id: string) => {
+  if (window.confirm('Are you sure you want to delete this author?')) {
+    try {
+      setDeletingId(id);
+      await deleteAuthor(id);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Failed to delete author');
+    } finally {
+      setDeletingId(null);
     }
-  };
+  }
+};
+
+
 
   const filteredAuthors = authors.filter(author =>
     author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

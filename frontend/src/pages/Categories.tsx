@@ -18,9 +18,14 @@ const Categories = () => {
     }
   };
 
-  const filteredCategories = categories.filter(category =>
-    category.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCategories = (categories ?? []).filter(cat => {
+  if (!cat) return false;
+  const name = cat.name ?? '';
+  const term = searchTerm ?? '';
+  return name.toLowerCase().includes(term.toLowerCase());
+});
+
+
 
   const handleExport = (format: 'csv' | 'json') => {
     const timestamp = new Date().toISOString().split('T')[0];

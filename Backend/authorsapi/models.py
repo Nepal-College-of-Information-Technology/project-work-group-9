@@ -37,6 +37,14 @@ class Author(BaseModel):
             date: lambda v: v.isoformat()
         }
 
+class AuthorCreate(BaseModel):
+    first_name: str
+    last_name: str
+    bio: str
+    date_of_birth: date
+    date_of_death: Optional[date] = None
+    nationality: str
+
 
 class Categories(BaseModel):
     id: int

@@ -15,10 +15,30 @@ export interface Book {
 
 export interface Author {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   bio: string;
-  bookCount: number;
+  date_of_birth: string;
+  date_of_death?: string;
+  nationality: string;
+  created_at: string;
+  updated_at: string;
+  average_rating: number;
+  book_count: number;
+  books: Book[];
+  name: string; 
 }
+
+type AuthorCreateInput = {
+  first_name: string;
+  last_name: string;
+  bio: string;
+  date_of_birth: string; // in YYYY-MM-DD format
+  date_of_death?: string; // optional
+  nationality: string;
+};
+
+
 
 export interface Category {
   id: string;
@@ -73,6 +93,31 @@ let categoriesData: Category[] = [
 ];
 */
 
+
+const transformAuthor = (backendAuthor: any): Author => ({
+  id: String(backendAuthor.author_id),
+  first_name: backendAuthor.first_name,
+  last_name: backendAuthor.last_name,
+  bio: backendAuthor.bio,
+  date_of_birth: backendAuthor.date_of_birth,
+  date_of_death: backendAuthor.date_of_death || undefined,
+  nationality: backendAuthor.nationality,
+  created_at: backendAuthor.created_at,
+  updated_at: backendAuthor.updated_at,
+  average_rating: backendAuthor.average_rating,
+  book_count: backendAuthor.book_count,
+  books: backendAuthor.books || [],
+  name: `${backendAuthor.first_name} ${backendAuthor.last_name}`,
+});
+
+
+const transformCategory = (backendCategory: any): Category => ({
+  id: String(backendCategory.id),  // convert int to string
+  name: backendCategory.name,
+  bookCount: backendCategory.bookCount || 0, // backend might not have this, so default 0
+});
+
+
 export const useLibraryData = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
@@ -89,9 +134,30 @@ export const useLibraryData = () => {
         apiClient.get('/authors'),
         apiClient.get('/categories'),
       ]);
-      setBooks(booksRes.data);
-      setAuthors(authorsRes.data);
-      setCategories(categoriesRes.data);
+
+        const transformedAuthors = authorsRes.data.map(transformAuthor);
+
+      // You might want to transform categories similarly if needed
+      const transformedCategories = categoriesRes.data.map(transformCategory);
+
+      setAuthors(transformedAuthors);
+      setCategories(transformedCategories);
+
+      // For books, since you need authorName and categoryName, map after authors/categories loaded
+      // Assuming backend book has author_id and category_id, adjust accordingly
+      const transformedBooks = booksRes.data.map((backendBook: any) => ({
+        id: String(backendBook.id),
+        title: backendBook.title,
+        description: backendBook.description,
+        authorId: String(backendBook.author_id),
+        authorName: transformedAuthors.find(a => a.id === String(backendBook.author_id))?.name || '',
+        categoryId: String(backendBook.category_id),
+        categoryName: transformedCategories.find(c => c.id === String(backendBook.category_id))?.name || '',
+        publishedDate: backendBook.published_date,
+        price: backendBook.price,
+      }));
+
+      setBooks(transformedBooks);
     } catch (error) {
       console.error('Failed to fetch library data:', error);
     }
@@ -142,19 +208,31 @@ export const useLibraryData = () => {
   };
 
   // addBook with API call
-const addBook = async (bookData: Omit<Book, 'id' | 'authorName' | 'categoryName'>) => {
+const addBook = async (bookData) => {
+  console.log('Adding book:', bookData);
   const response = await apiClient.post('/books', bookData);
-  const newBook: Book = response.data;
+  console.log('Response from addBook:', response.data);
+  const newBook: Book = {
+    ...response.data,
+    authorName: authors.find(a => a.id === response.data.authorId)?.name || '',
+    categoryName: categories.find(c => c.id === response.data.categoryId)?.name || '',
+  };
   setBooks(prev => [...prev, newBook]);
   return newBook;
 };
 
+
 // updateBook with API call
 const updateBook = async (id: string, bookData: Omit<Book, 'id' | 'authorName' | 'categoryName'>) => {
   const response = await apiClient.put(`/books/${id}`, bookData);
-  const updatedBook: Book = response.data;
+  const updatedBook: Book = {
+    ...response.data,
+    authorName: authors.find(a => a.id === response.data.authorId)?.name || '',
+    categoryName: categories.find(c => c.id === response.data.categoryId)?.name || '',
+  };
   setBooks(prev => prev.map(book => (book.id === id ? updatedBook : book)));
 };
+
 
 // deleteBook with API call
 const deleteBook = async (id: string) => {
@@ -182,7 +260,12 @@ const bulkImportBooks = async (importedBooks: Omit<Book, 'id' | 'authorName' | '
 
     try {
       const response = await apiClient.post('/books', bookData);
-      imported.push(response.data);
+      const newBook: Book = {
+        ...response.data,
+        authorName: author.name,
+        categoryName: category.name,
+      };
+      imported.push(newBook);
     } catch (error) {
       errors.push(`Row ${index + 1}: Failed to import book`);
     }
@@ -195,90 +278,73 @@ const bulkImportBooks = async (importedBooks: Omit<Book, 'id' | 'authorName' | '
   return { imported: imported.length, errors };
 };
 
+
   // Author operations
-  const addAuthor = (authorData: Omit<Author, 'id' | 'bookCount'>) => {
-    const newAuthor: Author = {
-      ...authorData,
-      id: Date.now().toString(),
-      bookCount: 0
-    };
-    const updatedAuthors = [...authors, newAuthor];
-    setAuthors(updatedAuthors);
-    authorsData = updatedAuthors;
-    return newAuthor;
+    const addAuthor = async (authorData: AuthorCreateInput): Promise<Author> => {
+    console.log("Sending authorData:", authorData);
+    const response = await apiClient.post('/authors/', authorData);
+    return transformAuthor(response.data);
   };
 
-  const updateAuthor = (id: string, authorData: Omit<Author, 'id' | 'bookCount'>) => {
-    const updatedAuthors = authors.map(author => 
-      author.id === id ? { ...author, ...authorData } : author
-    );
-    setAuthors(updatedAuthors);
-    authorsData = updatedAuthors;
+    const updateAuthor = async (id: string, authorData: AuthorCreateInput): Promise<Author> => {
+  const response = await apiClient.put(`/authors/${id}`, authorData);
+  const updatedAuthor = transformAuthor(response.data);
 
-    // Update author names in books
-    const author = updatedAuthors.find(a => a.id === id);
-    if (author) {
-      const updatedBooks = books.map(book => 
-        book.authorId === id ? { ...book, authorName: author.name } : book
-      );
-      setBooks(updatedBooks);
-      booksData = updatedBooks;
-    }
-  };
+  setAuthors(prev =>
+    prev.map(author => (author.id === id ? updatedAuthor : author))
+  );
 
-  const deleteAuthor = (id: string) => {
-    // Check if author has books
-    const hasBooks = books.some(book => book.authorId === id);
-    if (hasBooks) {
-      throw new Error('Cannot delete author with existing books');
-    }
+  const fullName = `${updatedAuthor.first_name} ${updatedAuthor.last_name}`;
+  setBooks(prev =>
+    prev.map(book =>
+      book.authorId === id ? { ...book, authorName: fullName } : book
+    )
+  );
 
-    const updatedAuthors = authors.filter(author => author.id !== id);
-    setAuthors(updatedAuthors);
-    authorsData = updatedAuthors;
-  };
+  return updatedAuthor;
+};
+
+
+  const deleteAuthor = async (id: string) => {
+  const hasBooks = books.some(book => book.authorId === id);
+  if (hasBooks) {
+    throw new Error('Cannot delete author with existing books');
+  }
+
+  await apiClient.delete(`/authors/${id}`);
+  setAuthors(prev => prev.filter(author => author.id !== id));
+};
+
 
   // Category operations
-  const addCategory = (categoryData: Omit<Category, 'id' | 'bookCount'>) => {
-    const newCategory: Category = {
-      ...categoryData,
-      id: Date.now().toString(),
-      bookCount: 0
-    };
-    const updatedCategories = [...categories, newCategory];
-    setCategories(updatedCategories);
-    categoriesData = updatedCategories;
+  const addCategory = async (categoryData: Omit<Category, 'id' | 'bookCount'>) => {
+    const response = await apiClient.post('/categories', categoryData);
+    const newCategory: Category = response.data;
+    setCategories(prev => [...prev, newCategory]);
     return newCategory;
   };
 
-  const updateCategory = (id: string, categoryData: Omit<Category, 'id' | 'bookCount'>) => {
-    const updatedCategories = categories.map(category => 
-      category.id === id ? { ...category, ...categoryData } : category
-    );
-    setCategories(updatedCategories);
-    categoriesData = updatedCategories;
+  const updateCategory = async (id: string, categoryData: Omit<Category, 'id' | 'bookCount'>) => {
+    const response = await apiClient.put(`/categories/${id}`, categoryData);
+    const updatedCategory: Category = response.data;
+    setCategories(prev => prev.map(category => (category.id === id ? updatedCategory : category)));
 
     // Update category names in books
-    const category = updatedCategories.find(c => c.id === id);
-    if (category) {
-      const updatedBooks = books.map(book => 
-        book.categoryId === id ? { ...book, categoryName: category.name } : book
-      );
-      setBooks(updatedBooks);
-      booksData = updatedBooks;
-    }
+    const updatedBooks = books.map(book =>
+      book.categoryId === id ? { ...book, categoryName: updatedCategory.name } : book
+    );
+    setBooks(updatedBooks);
   };
 
-  const deleteCategory = (id: string) => {
+  const deleteCategory = async (id: string) => {
     // Check if category has books
     const hasBooks = books.some(book => book.categoryId === id);
     if (hasBooks) {
       throw new Error('Cannot delete category with existing books');
     }
 
-    const updatedCategories = categories.filter(category => category.id !== id);
-    setCategories(updatedCategories);
-    categoriesData = updatedCategories;
+    await apiClient.delete(`/categories/${id}`);
+    setCategories(prev => prev.filter(category => category.id !== id));
   };
 
   return {
@@ -295,6 +361,6 @@ const bulkImportBooks = async (importedBooks: Omit<Book, 'id' | 'authorName' | '
     deleteAuthor,
     addCategory,
     updateCategory,
-    deleteCategory
+    deleteCategory,
   };
 };
