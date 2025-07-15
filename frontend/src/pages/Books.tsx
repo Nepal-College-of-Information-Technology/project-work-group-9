@@ -24,13 +24,14 @@ const Books = () => {
 
   const filteredBooks = books
   .filter(book => {
-    const title = book.title || '';
-    const author = book.authorName || '';
+    const title = typeof book.title === 'string' ? book.title : '';
+    const author = typeof book.authorName === 'string' ? book.authorName : '';
     const term = searchTerm.toLowerCase();
 
     return title.toLowerCase().includes(term) || author.toLowerCase().includes(term);
   })
-    .filter(book => filterCategory === '' || book.categoryName === filterCategory)
+
+  .filter(book => filterCategory === '' || (book.categoryName ?? '') === filterCategory)
     .sort((a, b) => {
       switch (sortBy) {
         case 'title':

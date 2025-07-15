@@ -1,33 +1,44 @@
-from .models import Author, AuthorCreate
+from .models import Author, AuthorCreateInput
 from fastapi import APIRouter, HTTPException
-from db import authors_table
+from db import authors_table, books_table
 import json
 from tinydb import Query
 
-from datetime import datetime
-
+from datetime import datetime, timezone
 
 
 router = APIRouter()
 
+def get_next_author_id() -> int:
+    all_authors = authors_table.all()
+    max_id = max((a.get("author_id", 0) for a in all_authors), default=0)
+    return max_id + 1
+
 # POST method to create an author
 @router.post("/authors/")
-def create_author(author: AuthorCreate):
-    author_dict = json.loads(author.model_dump_json())
+def create_author(author: AuthorCreateInput):
+    first_name, *last_name_parts = author.name.strip().split()
+    last_name = " ".join(last_name_parts) if last_name_parts else ""
 
-    # Add extra fields
-    now = datetime.utcnow().date()
-    author_dict["created_at"] = now.isoformat()
-    author_dict["updated_at"] = now.isoformat()
-    author_dict["average_rating"] = 0.0
-    author_dict["book_count"] = 0
-    author_dict["books"] = []
-    all_authors = authors_table.all()
-    max_id = max([a.get("author_id", 0) for a in all_authors], default=0)
-    author_dict["author_id"] = max_id + 1
+    now = datetime.now(timezone.utc).date()
+    author_dict = {
+        "author_id": get_next_author_id(),
+        "first_name": first_name,
+        "last_name": last_name,
+        "bio": author.bio,
+        "date_of_birth": None,
+        "date_of_death": None,
+        "nationality": "Unknown",
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat(),
+        "average_rating": 0.0,
+        "book_count": 0,
+        "books": [],
+    }
 
     authors_table.insert(author_dict)
     return author_dict
+
 
 
 # GET method to retrieve all authors
@@ -49,7 +60,7 @@ def get_author_by_id(author_id: int):
 
 # PUT method to Update an author by ID
 @router.put("/authors/{author_id}")
-def update_author(author_id: int, updated_author: AuthorCreate):
+def update_author(author_id: int, updated_author: AuthorCreateInput):
     AuthorQuery = Query()
     if not authors_table.contains(AuthorQuery.author_id == author_id):
         raise HTTPException(status_code=404, detail="Author not found")
@@ -60,7 +71,7 @@ def update_author(author_id: int, updated_author: AuthorCreate):
     updated_dict = json.loads(updated_author.model_dump_json())
     updated_dict["author_id"] = author_id
     updated_dict["created_at"] = existing["created_at"]
-    updated_dict["updated_at"] = datetime.utcnow().date().isoformat()
+    updated_dict["updated_at"] = datetime.now(timezone.utc).date().isoformat()
     updated_dict["book_count"] = existing.get("book_count", 0)
     updated_dict["average_rating"] = existing.get("average_rating", 0.0)
     updated_dict["books"] = existing.get("books", [])

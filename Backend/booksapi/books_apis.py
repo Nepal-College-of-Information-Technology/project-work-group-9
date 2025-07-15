@@ -1,5 +1,5 @@
 from authorsapi.models import Categories
-from authorsapi.models import Book
+from authorsapi.models import Book, BookCreate
 from authorsapi.models import Author
 from fastapi import APIRouter, HTTPException, Query as QueryParam
 from db import categories_table
@@ -23,15 +23,22 @@ def get_all_books():
 
 # Create a book
 @router6.post('/books', status_code=201)
-def create_book(book: Book):
+def create_book(book: BookCreate):
     existing = books_table.get(BooksQuery.isbn == book.isbn)
     if existing:
         raise HTTPException(status_code=400, detail="Book with this ISBN already exists")
-    
-    book_dict = book.dict()
+
+    book_dict = book.model_dump()
+    all_books = books_table.all()
+    max_id = max([b.get("id", 0) for b in all_books], default=0)
+    new_id = max_id + 1
+
+    book_dict['id'] = new_id
     book_dict['publication_date'] = book.publication_date.isoformat()
-    book_id = books_table.insert(book_dict)
-    return {**book_dict, "id": book_id}
+
+    books_table.insert(book_dict)
+    return book_dict
+
 
 
 # Get book by ID
