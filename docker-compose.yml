@@ -1,23 +1,26 @@
+version: "3.9"
+
 services:
   backend:
     build:
       context: ./Backend
     container_name: backend-container
     ports:
-      - "8010:8010"
+      - "8010:8010"          # expose backend port to host
     volumes:
-      - ./Backend:/app
+      - ./Backend:/app       # optional, for live code sync
     environment:
       - PYTHONUNBUFFERED=1
-    command: uvicorn main:app --host 0.0.0.0 --port 8010
+    restart: unless-stopped
 
   frontend:
     build:
       context: ./Frontend
     container_name: frontend-container
     ports:
-      - "80:80"
+      - "80:3000"            # expose frontend port 3000 as 80 externally
     volumes:
-      - ./Frontend:/app
+      - ./Frontend:/app      # optional, for live code sync
     depends_on:
       - backend
+    restart: unless-stopped
