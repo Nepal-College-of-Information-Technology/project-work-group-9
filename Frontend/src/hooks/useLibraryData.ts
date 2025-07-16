@@ -110,22 +110,22 @@ const transformCategory = (backendCategory: any): Category => ({
   bookCount: backendCategory.bookCount || 0,
 });
 
-
-const transformAuthor = (raw: any): Author => ({
-  id: raw.id?.toString() ?? raw.author_id?.toString() ?? '',
-  first_name: raw.first_name ?? '',
-  last_name: raw.last_name ?? '',
-  name: `${raw.first_name ?? ''} ${raw.last_name ?? ''}`.trim(),
-  bio: raw.bio ?? '',
-  date_of_birth: raw.date_of_birth ?? '',
-  date_of_death: raw.date_of_death ?? null,  // This is fine if property is optional
-  nationality: raw.nationality ?? '',
-  created_at: raw.created_at ?? '',
-  updated_at: raw.updated_at ?? '',
-  average_rating: raw.average_rating ?? 0,
-  book_count: raw.book_count ?? 0,
-  books: raw.books ?? [],
+const transformAuthor = (data: any): Author => ({
+  id: data.author_id.toString(), // convert int to string if needed
+  first_name: data.first_name,
+  last_name: data.last_name,
+  name: `${data.first_name} ${data.last_name}`,
+  bio: data.bio,
+  date_of_birth: data.date_of_birth,
+  date_of_death: data.date_of_death,
+  nationality: data.nationality,
+  created_at: data.created_at,
+  updated_at: data.updated_at,
+  average_rating: data.average_rating,
+  book_count: data.book_count,
+  books: data.books || [],
 });
+
 
 
 
