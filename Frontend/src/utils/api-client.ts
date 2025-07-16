@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-const baseURL = 'http://backend:8010';
-
 export const apiClient = axios.create({
-  baseURL,
+  baseURL: 'http://backend:8010',  // backend service name and port inside Docker network
   headers: {
     'Content-Type': 'application/json',
   },
