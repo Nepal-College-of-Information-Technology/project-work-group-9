@@ -12,3 +12,11 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
 
+  frontend:
+    build:
+      context: ./Frontend
+    container_name: frontend-container
+    ports:
+      - "3000:3000"    # or whichever port your frontend runs on
+    volumes:
+      - ./Frontend:/app
