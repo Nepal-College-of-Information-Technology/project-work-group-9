@@ -18,7 +18,7 @@ services:
       context: ./Frontend
     container_name: frontend-container
     ports:
-      - "80:3000"            # expose frontend port 3000 as 80 externally
+      - "80:80"            # expose frontend port 3000 as 80 externally
     volumes:
       - ./Frontend:/app      # optional, for live code sync
     depends_on:
