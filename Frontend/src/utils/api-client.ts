@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = 'http://localhost:8010'; // Define this explicitly
+const baseURL = 'http://backend:8010';
 
 export const apiClient = axios.create({
   baseURL,
