@@ -1,10 +1,10 @@
-version: '3.9'
+version: "3.9"
 
 services:
-  fastapi-app:
+  backend:
     build:
-      context: ./Backend   # Look inside Backend for Dockerfile
-    container_name: fastapi-container
+      context: ./Backend
+    container_name: backend-container
     ports:
       - "8010:8010"
     volumes:
@@ -17,6 +17,6 @@ services:
       context: ./Frontend
     container_name: frontend-container
     ports:
-      - "3000:3000"    # or whichever port your frontend runs on
+      - "3000:3000"
     volumes:
       - ./Frontend:/app
